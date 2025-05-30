@@ -78,4 +78,5 @@ export const modulos: Modulo[] = [
   },
 ];
 
-export const secrets: string[] = ["c+Gele7=", "vX7VUCc="];
+const secretsString = import.meta.env.VITE_SECRETS || "";
+export const secrets: string[] = secretsString.split(',').map(s => s.trim()).filter(s => s !== "");

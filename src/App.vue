@@ -9,8 +9,6 @@ import {
   secrets,
 } from "./formData";
 
-const API_REST = "./jwt-token";
-
 const usuario = reactive({
   sub: "admin",
   iss: "https://auth.telefonica.es",
@@ -83,7 +81,7 @@ const validateGetJWT = () => {
 
 const fetchJWT = () => {
   console.log("fetchJWT!");
-  return fetch(API_REST, {
+  return fetch(import.meta.env.VITE_API_REST, {
     method: "POST",
     body: JSON.stringify({
       payload: usuario,
