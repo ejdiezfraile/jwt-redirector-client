@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { reactive, ref, computed, onMounted } from "vue";
+import { showAlert, showError } from "./utils";
 
 const API_REST = "./jwt-token";
 
@@ -133,15 +134,6 @@ const fallback = computed(() => {
 });
 
 const clearJWT = () => (jwt.value = "");
-const showAlert = (message) => {
-  console.warn("Alert:", message);
-  alert("Aviso: " + message);
-};
-const showError = (error) => {
-  console.error("Error:", error);
-  alert("Error: " + error);
-};
-
 
 const validateGetJWT = () => {
   if (usuario.sub === "") {
