@@ -1,81 +1,13 @@
 <script setup lang="ts">
 import { reactive, ref, computed, onMounted } from "vue";
-
-const API_REST = "./jwt-token";
-
-const perfiles = [
-  "ATMOVIL-ATMOVIL1",
-  "CAT-CAT1",
-  "CATMV-CATMV1",
-  "CATMV2-CATMV2",
-  "CGP-CGP1",
-  "CT-CSE",
-  "CT-CT1",
-  "CT-CTBIL",
-  "CT-CTLEON",
-  "CT-CTNETLAN",
-  "CT-CTR",
-  "CT-CTSEV",
-  "CT-CTSIP",
-  "CT-CTVAL",
-  "CT-CTVALL",
-  "CT-NGN",
-  "FLEXIBILIZACION-CTSev",
-  "FOA-FOA1",
-  "INCGEST-INCGEST1",
-  "INSTA-INSTA1",
-  "PRIMERA_LINEA-PRIMERA_LINEA1",
-  "PUBLICADOR-ATMOVIL1",
-  "SDR-SDR1",
-  "SOR-SAyA",
-  "SOR-SGEN",
-];
-const roles = [
-  "admin-Administrador",
-  "ADM.HADAX-Administrador",
-  "SDR-Administrador",
-  "TELCO-Administrador",
-  "TELCO-EDITOR",
-  "TELCO_INTERNO-Administrador",
-  "test1-Administrador",
-  "test2-EDITOR",
-];
-
-const idAplicaciones = ["HDM", "HDM1", "HDMP", "HDMPA"];
-
-const modulos = [
-  {
-    name: "hdm-user",
-    path: "hdm_user/home",
-    fallback: "hdm_user/jsp/inicioJWT.jsp",
-  },
-  {
-    name: "hdm-manager",
-    path: "hdm_manager/home",
-    fallback: "hdm_manager/jsp/inicioJWT.jsp",
-  },
-  {
-    name: "hdm-net",
-    path: "hdm_net/home",
-    fallback: "hdm_net/jsp/inicioJWT.jsp",
-  },
-  {
-    name: "hdm-deploy",
-    path: "hdm_hdxdep/home",
-    fallback: "hdm_hdxdep/jsp/inicioJWT.jsp",
-  },
-  { name: "pizarra HTML5", path: "pizHTML5?agua=", fallback: "" },
-  {
-    name: "myhdm",
-    path: "myhdm/home?debug=true",
-    fallback: "myhdm/index.html?debug=true",
-  },
-  {
-    name: "hdm-user-local",
-    path: "hidra/home",
-    fallback: "hidra/jsp/loginJWT.jsp",
-  },
-];
+import { showAlert, showError } from "./utils";
+import {
+  perfiles,
+  roles,
+  idAplicaciones,
+  modulos,
+  secrets,
+} from "./formData";
 
 const usuario = reactive({
   sub: "admin",
@@ -84,8 +16,6 @@ const usuario = reactive({
   app: "HDMP",
   roles: ["admin-Administrador"],
 });
-
-const secrets = ["c+Gele7=", "vX7VUCc="];
 
 const host = ref(window.location.hostname);
 const port = ref("9800");
@@ -133,15 +63,6 @@ const fallback = computed(() => {
 });
 
 const clearJWT = () => (jwt.value = "");
-const showAlert = (message) => {
-  console.warn("Alert:", message);
-  alert("Aviso: " + message);
-};
-const showError = (error) => {
-  console.error("Error:", error);
-  alert("Error: " + error);
-};
-
 
 const validateGetJWT = () => {
   if (usuario.sub === "") {
@@ -160,7 +81,7 @@ const validateGetJWT = () => {
 
 const fetchJWT = () => {
   console.log("fetchJWT!");
-  return fetch(API_REST, {
+  return fetch(import.meta.env.VITE_API_REST, {
     method: "POST",
     body: JSON.stringify({
       payload: usuario,
