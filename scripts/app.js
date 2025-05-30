@@ -1,7 +1,12 @@
-new Vue({
-  el: "#app",
-  data: {
-    perfiles: [
+Vue.createApp({
+  setup() {
+    const { ref, reactive, computed, onMounted } = Vue;
+    const jwt = ref(""); // Define jwt in setup
+    return { jwt }; // Return jwt from setup
+  },
+  data: function() {
+    return {
+      perfiles: [
       "ATMOVIL-ATMOVIL1",
       "CAT-CAT1",
       "CATMV-CATMV1",
@@ -84,7 +89,8 @@ new Vue({
     module: "pizarra HTML5",
     secret: "",
     secrets: ["c+Gele7=", "vX7VUCc="],
-    jwt: "",
+    // jwt: "",
+    };
   },
   mounted: function() {
     this.secret = this.secrets[0]
@@ -259,4 +265,4 @@ new Vue({
       );
     },
   },
-});
+}).mount('#app');
