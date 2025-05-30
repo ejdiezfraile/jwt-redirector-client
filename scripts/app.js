@@ -1,7 +1,7 @@
-new Vue({
-  el: "#app",
-  data: {
-    perfiles: [
+Vue.createApp({
+  data: function() {
+    return {
+      perfiles: [
       "ATMOVIL-ATMOVIL1",
       "CAT-CAT1",
       "CATMV-CATMV1",
@@ -85,6 +85,7 @@ new Vue({
     secret: "",
     secrets: ["c+Gele7=", "vX7VUCc="],
     jwt: "",
+    };
   },
   mounted: function() {
     this.secret = this.secrets[0]
@@ -259,4 +260,4 @@ new Vue({
       );
     },
   },
-});
+}).mount('#app');
