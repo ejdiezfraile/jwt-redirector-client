@@ -1,5 +1,5 @@
 // src/api.ts
-import { showError } from "./utils"; // Assuming showAlert is not directly needed here now
+import { showError } from "../utils/utils"; // Assuming showAlert is not directly needed here now
 
 const API_BASE_URL = import.meta.env.VITE_API_REST; // Added line
 

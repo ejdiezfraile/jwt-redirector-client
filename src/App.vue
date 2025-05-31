@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { reactive, ref, computed, onMounted } from "vue";
-import { showAlert, showError } from "./utils";
-import { getJWTAPI, executeRedirectAPI } from "./api";
-import type { Usuario as ApiUsuario } from "./api"; // Renamed to avoid conflict if Usuario is defined locally
+import { showAlert, showError } from "./utils/utils";
+import { getJWTAPI, executeRedirectAPI } from "./services/api";
+import type { Usuario as ApiUsuario } from "./services/api"; // Renamed to avoid conflict if Usuario is defined locally
 import {
   perfiles,
   roles,
   idAplicaciones,
   modulos,
   secrets,
-} from "./formData";
+} from "./data/formData";
 
 const usuario = reactive({
   sub: "admin",
