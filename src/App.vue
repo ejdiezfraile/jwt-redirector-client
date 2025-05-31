@@ -100,6 +100,53 @@ onMounted(() => {
   secret.value = secrets[0]
 });
 
+const handleCalculateJWT = async () => {
+  if (!validateGetJWT()) {
+    console.log('Validation for GetJWT failed.');
+    return;
+  }
+  const newJwt = await getJWTAPI(usuario, secret.value);
+  if (newJwt) {
+    jwt.value = newJwt;
+  }
+};
+
+const handleSendJWT = async () => {
+  if (!validateRedirectJWT()) {
+    console.log('Validation for redirect failed.');
+    return;
+  }
+
+  let currentJwt = jwt.value;
+
+  if (currentJwt === '') {
+    console.log('JWT is empty, attempting to fetch...');
+    if (!validateGetJWT()) {
+      console.log('Validation for GetJWT failed.');
+      return;
+    }
+    const newJwt = await getJWTAPI(usuario, secret.value);
+    if (newJwt) {
+      jwt.value = newJwt;
+      currentJwt = newJwt;
+      console.log('JWT fetched successfully.');
+    } else {
+      console.log('Failed to fetch JWT. Redirect aborted.');
+      return;
+    }
+  }
+
+  if (currentJwt && currentJwt !== '') {
+    console.log('Proceeding to redirect with JWT:', currentJwt);
+    await executeRedirectAPI(isPizarra.value, target.value, currentJwt, fallback.value);
+  } else {
+    // This case implies JWT was empty and fetching failed.
+    // The 'Failed to fetch JWT' log above would have been hit, and function returned.
+    // However, if somehow currentJwt is falsy without the above return, this is a fallback.
+    console.log('No JWT available. Redirect aborted.');
+    showAlert('No se pudo obtener un JWT para la redirección.');
+  }
+};
 </script>
 
 <template>
@@ -179,7 +226,7 @@ onMounted(() => {
       <div class="w-full md:w-1/4 px-3 mb-6 md:mb-0">
         <button
           class="flex-shrink-0 bg-teal-500 hover:bg-teal-700 border-teal-500 hover:border-teal-700 text-sm border-4 text-white py-1 px-2 rounded"
-          @click="async () => { if (!validateGetJWT()) { console.log('Validation for GetJWT failed.'); return; } const newJwt = await getJWTAPI(usuario, secret.value); if (newJwt) { jwt.value = newJwt; } }">
+          @click="handleCalculateJWT">
           Calcular JWT
         </button>
       </div>
@@ -239,39 +286,7 @@ onMounted(() => {
       <div class="w-full md:w-1/4 px-3 mb-6 md:mb-0">
         <button
           class="flex-shrink-0 bg-teal-500 hover:bg-teal-700 border-teal-500 hover:border-teal-700 text-sm border-4 text-white py-1 px-2 rounded"
-          @click="async () => {
-            if (!validateRedirectJWT()) {
-              console.log('Validation for redirect failed.');
-              return;
-            }
-
-            let currentJwt = jwt.value;
-
-            if (currentJwt === '') {
-              console.log('JWT is empty, attempting to fetch...');
-              if (!validateGetJWT()) {
-                console.log('Validation for GetJWT failed.');
-                return;
-              }
-              const newJwt = await getJWTAPI(usuario, secret.value);
-              if (newJwt) {
-                jwt.value = newJwt;
-                currentJwt = newJwt;
-                console.log('JWT fetched successfully.');
-              } else {
-                console.log('Failed to fetch JWT. Redirect aborted.');
-                return;
-              }
-            }
-
-            if (currentJwt && currentJwt !== '') {
-              console.log('Proceeding to redirect with JWT:', currentJwt);
-              await executeRedirectAPI(isPizarra.value, target.value, currentJwt, fallback.value);
-            } else {
-              console.log('No JWT available. Redirect aborted.');
-              showAlert('No se pudo obtener un JWT para la redirección.');
-            }
-          }">
+          @click="handleSendJWT">
           Enviar JWT
         </button>
       </div>
