@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { reactive, ref, computed, onMounted } from "vue";
 import { showAlert, showError } from "./utils";
+import { getJWTAPI, executeRedirectAPI } from "./api";
+import type { Usuario as ApiUsuario } from "./api"; // Renamed to avoid conflict if Usuario is defined locally
 import {
   perfiles,
   roles,
@@ -79,42 +81,6 @@ const validateGetJWT = () => {
   return false;
 }
 
-const fetchJWT = () => {
-  console.log("fetchJWT!");
-  return fetch(import.meta.env.VITE_API_REST, {
-    method: "POST",
-    body: JSON.stringify({
-      payload: usuario,
-      secret: secret.value,
-    }),
-    headers: {
-      "Content-Type": "application/json",
-    },
-  }).then(function (response) {
-    if (!response.ok) {
-      throw new Error("An error has occured: " + response.status);
-    }
-    return response.json();
-  });
-}
-
-const getJWT = () => {
-  console.log("getJWT!");
-  console.log(JSON.stringify(usuario));
-  if (!validateGetJWT()) return;
-
-  return fetchJWT()
-    .then(function (data) {
-      if (data && data.jwt) {
-        console.log(data);
-        jwt.value = data.jwt;
-      }
-    })
-    .catch(function (error) {
-      showError(error.message);
-    });
-}
-
 const validateRedirectJWT = () => {
   if (host.value === "") {
     showAlert("Falta el nombre de host");
@@ -127,66 +93,6 @@ const validateRedirectJWT = () => {
 
   // Algo falta
   return false;
-}
-
-const fetchRedirectJWT = () => {
-  console.log("fetchRedirectJWT!");
-
-  if (isPizarra.value) {
-    window.open(target.value, "_blank").focus();
-    return;
-  }
-
-  const response = fetch(target.value, {
-    credentials: "include",
-    headers: {
-      Authorization: "Bearer " + jwt.value,
-    },
-  }).then(function (response) {
-    console.log("Success fetchRedirectJWT:", response);
-    if (response.redirected) {
-      // window.location.href = response.url;
-      window.open(response.url, "_blank");
-    } else if (response.ok) {
-      //  IE10. Intentar adivinar
-      // window.location.href = vm.fallback;
-      window.open(fallback.value, "_blank");
-    } else {
-      throw new Error(
-        "Problemas con " +
-        response.url +
-        " " +
-        response.statusText +
-        "(" +
-        response.status +
-        ")"
-      );
-    }
-  });
-
-  return response
-}
-
-const redirectJWT = () => {
-  console.log("redirectJWT!");
-  if (!validateRedirectJWT()) return;
-
-  // Pedimos el jwt
-  if (jwt.value === "") {
-    if (!validateGetJWT()) return;
-
-    getJWT()
-      .then(function () {
-        return fetchRedirectJWT();
-      })
-      .catch(function (error) {
-        showError(error);
-      });
-  } else {
-    fetchRedirectJWT().catch(function (error) {
-      showError(error);
-    });
-  }
 }
 
 onMounted(() => {
@@ -273,7 +179,7 @@ onMounted(() => {
       <div class="w-full md:w-1/4 px-3 mb-6 md:mb-0">
         <button
           class="flex-shrink-0 bg-teal-500 hover:bg-teal-700 border-teal-500 hover:border-teal-700 text-sm border-4 text-white py-1 px-2 rounded"
-          @click="getJWT">
+          @click="async () => { const newJwt = await getJWTAPI(usuario, secret.value, validateGetJWT); if (newJwt) { jwt.value = newJwt; } }">
           Calcular JWT
         </button>
       </div>
@@ -333,7 +239,39 @@ onMounted(() => {
       <div class="w-full md:w-1/4 px-3 mb-6 md:mb-0">
         <button
           class="flex-shrink-0 bg-teal-500 hover:bg-teal-700 border-teal-500 hover:border-teal-700 text-sm border-4 text-white py-1 px-2 rounded"
-          @click="redirectJWT">
+          @click="async () => {
+            if (!validateRedirectJWT()) {
+              console.log('Validation for redirect failed.');
+              return;
+            }
+
+            let currentJwt = jwt.value;
+
+            if (currentJwt === '') {
+              console.log('JWT is empty, attempting to fetch...');
+              if (!validateGetJWT()) {
+                console.log('Validation for GetJWT failed.');
+                return;
+              }
+              const newJwt = await getJWTAPI(usuario, secret.value, validateGetJWT);
+              if (newJwt) {
+                jwt.value = newJwt;
+                currentJwt = newJwt;
+                console.log('JWT fetched successfully.');
+              } else {
+                console.log('Failed to fetch JWT. Redirect aborted.');
+                return;
+              }
+            }
+
+            if (currentJwt && currentJwt !== '') {
+              console.log('Proceeding to redirect with JWT:', currentJwt);
+              await executeRedirectAPI(isPizarra.value, target.value, currentJwt, fallback.value);
+            } else {
+              console.log('No JWT available. Redirect aborted.');
+              showAlert('No se pudo obtener un JWT para la redirección.');
+            }
+          }">
           Enviar JWT
         </button>
       </div>
