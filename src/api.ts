@@ -35,17 +35,12 @@ export const fetchJWTAPI = async (
 
 export const getJWTAPI = async (
   usuario: Usuario,
-  secretValue: string, // Changed
-  validateFn: () => boolean
-): Promise<string | undefined> => { // Added return type
+  secretValue: string
+): Promise<string | undefined> => {
   console.log("getJWTAPI invoked");
-  if (!validateFn()) {
-    console.log("getJWTAPI validation failed");
-    return undefined; // Explicit return
-  }
-
+  // The validateFn() call and its conditional block are removed.
   try {
-    const data = await fetchJWTAPI(usuario, secretValue); // Use secretValue
+    const data = await fetchJWTAPI(usuario, secretValue);
     if (data && data.jwt) {
       console.log("JWT data received:", data);
       return data.jwt; // Return JWT string

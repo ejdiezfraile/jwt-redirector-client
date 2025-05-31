@@ -179,7 +179,7 @@ onMounted(() => {
       <div class="w-full md:w-1/4 px-3 mb-6 md:mb-0">
         <button
           class="flex-shrink-0 bg-teal-500 hover:bg-teal-700 border-teal-500 hover:border-teal-700 text-sm border-4 text-white py-1 px-2 rounded"
-          @click="async () => { const newJwt = await getJWTAPI(usuario, secret.value, validateGetJWT); if (newJwt) { jwt.value = newJwt; } }">
+          @click="async () => { if (!validateGetJWT()) { console.log('Validation for GetJWT failed.'); return; } const newJwt = await getJWTAPI(usuario, secret.value); if (newJwt) { jwt.value = newJwt; } }">
           Calcular JWT
         </button>
       </div>
@@ -253,7 +253,7 @@ onMounted(() => {
                 console.log('Validation for GetJWT failed.');
                 return;
               }
-              const newJwt = await getJWTAPI(usuario, secret.value, validateGetJWT);
+              const newJwt = await getJWTAPI(usuario, secret.value);
               if (newJwt) {
                 jwt.value = newJwt;
                 currentJwt = newJwt;
